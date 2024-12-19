@@ -1,6 +1,6 @@
 import '../core/daily_challenge.dart';
 
-/// Conditions of the puzzle [https://adventofcode.com/2024/day/1]
+/// Conditions of the puzzle [https://adventofcode.com/2024/day/2]
 final class RedNosedReports implements DailyChallenge {
   RedNosedReports() {
     _reportsList = _parseInitialData(initialData);
@@ -14,21 +14,46 @@ final class RedNosedReports implements DailyChallenge {
     final linesRaw = src.split('\n');
     List<List<int>> reportsList = [];
     for (final line in linesRaw) {
-      reportsList.add(line.trim().split(' ').map(int.parse).toList());
+      final numbersRaw = line.trim();
+      if (numbersRaw.isEmpty) break;
+      reportsList.add(numbersRaw.split(' ').map(int.parse).toList());
     }
     return reportsList;
   }
 
   /// Solving the part one of the puzzle
   int solvePuzzlePartOne() {
-    // TODO(Vadim): #unimplemented - Not ready
-    return 0;
+    final safeReports = _reportsList.where(_safetyTest);
+    return safeReports.length;
+  }
+
+  /// returning **true** if given report can be safe
+  bool _safetyTest(List<int> report) {
+    List<int> deltas = [];
+    for (int i = 1; i < report.length; i++) {
+      deltas.add(report[i] - report[i - 1]);
+    }
+    return (deltas.every((d) => d.isNegative) ||
+            deltas.every((d) => !d.isNegative)) &&
+        deltas.every((d) => d.abs() >= 1 && d.abs() <= 3);
   }
 
   /// Solving the part two of the puzzle
   int solvePuzzlePartTwo() {
-    // TODO(Vadim): #unimplemented - Not ready
-    return 0;
+    final unsafeReports = _reportsList.where((r) => !_safetyTest(r));
+    final canDampened = unsafeReports.where(_dampenedAbilityTest);
+    return _reportsList.length - unsafeReports.length + canDampened.length;
+  }
+
+  /// returning **true** if given report can be dampened
+  bool _dampenedAbilityTest(List<int> report) {
+    for (int i = 0; i < report.length; i++) {
+      final shorterRepost = <int>[]
+        ..addAll(report)
+        ..removeAt(i);
+      if (_safetyTest(shorterRepost)) return true;
+    }
+    return false;
   }
 }
 

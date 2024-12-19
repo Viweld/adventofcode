@@ -5,10 +5,10 @@ import 'puzzles/day_02.dart';
 void main() {
   final day1 = HistorianHysteria();
   final day2 = RedNosedReports();
-  solvePuzzle(day1);
+  solve(day2);
 }
 
-void solvePuzzle(DailyChallenge challenge) {
+void solve(DailyChallenge challenge) {
   final resultOfPartOne = challenge.solvePuzzlePartOne();
   print('Answer of part one: $resultOfPartOne');
   final resultOfPartTwo = challenge.solvePuzzlePartTwo();
