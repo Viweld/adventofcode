@@ -1,8 +1,16 @@
+import 'core/daily_challenge.dart';
 import 'puzzles/day_01.dart';
+import 'puzzles/day_02.dart';
 
 void main() {
-  final resultOfPartOneDay1 = HistorianHysteria().solvePuzzlePartOne();
-  print('Day1: answer of part one: $resultOfPartOneDay1');
-  final resultOfPartTwoDay1 = HistorianHysteria().solvePuzzlePartTwo();
-  print('Day1: answer of part two: $resultOfPartTwoDay1');
+  final day1 = HistorianHysteria();
+  final day2 = RedNosedReports();
+  solvePuzzle(day1);
+}
+
+void solvePuzzle(DailyChallenge challenge) {
+  final resultOfPartOne = challenge.solvePuzzlePartOne();
+  print('Answer of part one: $resultOfPartOne');
+  final resultOfPartTwo = challenge.solvePuzzlePartTwo();
+  print('Answer of part two: $resultOfPartTwo');
 }
