@@ -1,11 +1,13 @@
 import 'core/daily_challenge.dart';
 import 'puzzles/day_01.dart';
 import 'puzzles/day_02.dart';
+import 'puzzles/day_03.dart';
 
 void main() {
   final day1 = HistorianHysteria();
   final day2 = RedNosedReports();
-  solve(day2);
+  final day3 = MullItOver();
+  solve(day3);
 }
 
 void solve(DailyChallenge challenge) {
