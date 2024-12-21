@@ -52,35 +52,52 @@ final class CeresSearch implements DailyChallenge {
 
     for (int y = 0; y < _matrixSize.height; y++) {
       for (int x = 0; x < _matrixSize.width; x++) {
-        final foundXmasToUp = _matrixContent.toUp(x, y);
+        final char = _matrixContent[Point(x, y)];
+        if (char == null) continue;
+        if (!Xmas.word.contains(char)) continue;
+        final i = Xmas.word.indexOf(char);
+
+        // search XMAS in all directions
+        final foundXmasToUp = _matrixContent.toUp(char, x, y, i);
         if (foundXmasToUp != null) xmasSet.add(foundXmasToUp);
-        final foundXmasToRightUp = _matrixContent.toRightUp(x, y);
+        final foundXmasToRightUp = _matrixContent.toRightUp(char, x, y, i);
         if (foundXmasToRightUp != null) xmasSet.add(foundXmasToRightUp);
-        final foundXmasToRight = _matrixContent.toRight(x, y);
+        final foundXmasToRight = _matrixContent.toRight(char, x, y, i);
         if (foundXmasToRight != null) xmasSet.add(foundXmasToRight);
-        final foundXmasToRightDown = _matrixContent.toRightDown(x, y);
+        final foundXmasToRightDown = _matrixContent.toRightDown(char, x, y, i);
         if (foundXmasToRightDown != null) xmasSet.add(foundXmasToRightDown);
-        final foundXmasToDown = _matrixContent.toDown(x, y);
+        final foundXmasToDown = _matrixContent.toDown(char, x, y, i);
         if (foundXmasToDown != null) xmasSet.add(foundXmasToDown);
-        final foundXmasToLeftDown = _matrixContent.toLeftDown(x, y);
+        final foundXmasToLeftDown = _matrixContent.toLeftDown(char, x, y, i);
         if (foundXmasToLeftDown != null) xmasSet.add(foundXmasToLeftDown);
-        final foundXmasToLeft = _matrixContent.toLeft(x, y);
+        final foundXmasToLeft = _matrixContent.toLeft(char, x, y, i);
         if (foundXmasToLeft != null) xmasSet.add(foundXmasToLeft);
-        final foundXmasToLeftUp = _matrixContent.toLeftUp(x, y);
+        final foundXmasToLeftUp = _matrixContent.toLeftUp(char, x, y, i);
         if (foundXmasToLeftUp != null) xmasSet.add(foundXmasToLeftUp);
       }
     }
-
     return xmasSet.length;
   }
 
   /// Solving the part two of the puzzle
   int solvePuzzlePartTwo() {
-    // TODO(Vadim): #unimplemented - Not ready
-    return 0;
+    Set<XForm> xFormSet = {};
+
+    for (int y = 0; y < _matrixSize.height; y++) {
+      for (int x = 0; x < _matrixSize.width; x++) {
+        final char = _matrixContent[Point(x, y)];
+        if (char == null) continue;
+        if (char != XForm.centerChar) continue;
+
+        final xForm = _matrixContent.checkForXForm(x, y);
+        if (xForm != null) xFormSet.add(xForm);
+      }
+    }
+    return xFormSet.length;
   }
 }
 
+/// "XMAS"-word object
 final class Xmas {
   Map<String, Point> _chars = {};
 
@@ -109,12 +126,49 @@ final class Xmas {
   int get hashCode => Object.hashAll(_chars.entries.map((e) => e.value));
 }
 
+/// X-form of crossing "MAS"-words object
+final class XForm {
+  XForm({
+    required String tl,
+    required String tr,
+    required String bl,
+    required String br,
+    required Point centerPoint,
+  })  : _centerPoint = centerPoint,
+        _charsArray = [tl, tr, br, bl];
+
+  static const String centerChar = 'A';
+  static const String cornM = 'M';
+  static const String cornS = 'S';
+
+  final Point _centerPoint;
+
+  late List<String> _charsArray;
+
+  bool get _isCorrectComposition =>
+      _charsArray.where((e) => e == cornM).length == 2 &&
+      _charsArray.where((e) => e == cornS).length == 2;
+
+  bool get _isCorrectOrder =>
+      _charsArray[0] == _charsArray[1] || _charsArray[1] == _charsArray[2];
+
+  bool get isCorrect => _isCorrectComposition && _isCorrectOrder;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other.runtimeType != runtimeType) return false;
+
+    return other is XForm && _centerPoint == other._centerPoint;
+  }
+
+  @override
+  int get hashCode => _centerPoint.hashCode;
+}
+
+/// extensions for matrix of CeresSearch puzzle
 extension Finders on Map<Point, String> {
-  Xmas? toUp(int x, int y) {
-    final char = this[Point(x, y)];
-    if (char == null) throw UnsupportedError('No char with x=$x, y=$y');
-    if (!Xmas.word.contains(char)) return null;
-    final index = Xmas.word.indexOf(char);
+  Xmas? toUp(String char, int x, int y, int index) {
     final testWord = Xmas();
     for (int i = 0 - index; i < Xmas.word.length - index; i++) {
       testWord.addChar(Point(x, y - i), this[Point(x, y - i)] ?? '');
@@ -122,11 +176,7 @@ extension Finders on Map<Point, String> {
     return testWord.isCorrect ? testWord : null;
   }
 
-  Xmas? toRightUp(int x, int y) {
-    final char = this[Point(x, y)];
-    if (char == null) throw UnsupportedError('No char with x=$x, y=$y');
-    if (!Xmas.word.contains(char)) return null;
-    final index = Xmas.word.indexOf(char);
+  Xmas? toRightUp(String char, int x, int y, int index) {
     final testWord = Xmas();
     for (int i = 0 - index; i < Xmas.word.length - index; i++) {
       testWord.addChar(Point(x + i, y - i), this[Point(x + i, y - i)] ?? '');
@@ -134,11 +184,7 @@ extension Finders on Map<Point, String> {
     return testWord.isCorrect ? testWord : null;
   }
 
-  Xmas? toRight(int x, int y) {
-    final char = this[Point(x, y)];
-    if (char == null) throw UnsupportedError('No char with x=$x, y=$y');
-    if (!Xmas.word.contains(char)) return null;
-    final index = Xmas.word.indexOf(char);
+  Xmas? toRight(String char, int x, int y, int index) {
     final testWord = Xmas();
     for (int i = 0 - index; i < Xmas.word.length - index; i++) {
       testWord.addChar(Point(x + i, y), this[Point(x + i, y)] ?? '');
@@ -146,11 +192,7 @@ extension Finders on Map<Point, String> {
     return testWord.isCorrect ? testWord : null;
   }
 
-  Xmas? toRightDown(int x, int y) {
-    final char = this[Point(x, y)];
-    if (char == null) throw UnsupportedError('No char with x=$x, y=$y');
-    if (!Xmas.word.contains(char)) return null;
-    final index = Xmas.word.indexOf(char);
+  Xmas? toRightDown(String char, int x, int y, int index) {
     final testWord = Xmas();
     for (int i = 0 - index; i < Xmas.word.length - index; i++) {
       testWord.addChar(Point(x + i, y + i), this[Point(x + i, y + i)] ?? '');
@@ -158,11 +200,7 @@ extension Finders on Map<Point, String> {
     return testWord.isCorrect ? testWord : null;
   }
 
-  Xmas? toDown(int x, int y) {
-    final char = this[Point(x, y)];
-    if (char == null) throw UnsupportedError('No char with x=$x, y=$y');
-    if (!Xmas.word.contains(char)) return null;
-    final index = Xmas.word.indexOf(char);
+  Xmas? toDown(String char, int x, int y, int index) {
     final testWord = Xmas();
     for (int i = 0 - index; i < Xmas.word.length - index; i++) {
       testWord.addChar(Point(x, y + i), this[Point(x, y + i)] ?? '');
@@ -170,11 +208,7 @@ extension Finders on Map<Point, String> {
     return testWord.isCorrect ? testWord : null;
   }
 
-  Xmas? toLeftDown(int x, int y) {
-    final char = this[Point(x, y)];
-    if (char == null) throw UnsupportedError('No char with x=$x, y=$y');
-    if (!Xmas.word.contains(char)) return null;
-    final index = Xmas.word.indexOf(char);
+  Xmas? toLeftDown(String char, int x, int y, int index) {
     final testWord = Xmas();
     for (int i = 0 - index; i < Xmas.word.length - index; i++) {
       testWord.addChar(Point(x - i, y + i), this[Point(x - i, y + i)] ?? '');
@@ -182,11 +216,7 @@ extension Finders on Map<Point, String> {
     return testWord.isCorrect ? testWord : null;
   }
 
-  Xmas? toLeft(int x, int y) {
-    final char = this[Point(x, y)];
-    if (char == null) throw UnsupportedError('No char with x=$x, y=$y');
-    if (!Xmas.word.contains(char)) return null;
-    final index = Xmas.word.indexOf(char);
+  Xmas? toLeft(String char, int x, int y, int index) {
     final testWord = Xmas();
     for (int i = 0 - index; i < Xmas.word.length - index; i++) {
       testWord.addChar(Point(x - i, y), this[Point(x - i, y)] ?? '');
@@ -194,16 +224,23 @@ extension Finders on Map<Point, String> {
     return testWord.isCorrect ? testWord : null;
   }
 
-  Xmas? toLeftUp(int x, int y) {
-    final char = this[Point(x, y)];
-    if (char == null) throw UnsupportedError('No char with x=$x, y=$y');
-    if (!Xmas.word.contains(char)) return null;
-    final index = Xmas.word.indexOf(char);
+  Xmas? toLeftUp(String char, int x, int y, int index) {
     final testWord = Xmas();
     for (int i = 0 - index; i < Xmas.word.length - index; i++) {
       testWord.addChar(Point(x - i, y - i), this[Point(x - i, y - i)] ?? '');
     }
     return testWord.isCorrect ? testWord : null;
+  }
+
+  XForm? checkForXForm(int x, int y) {
+    final xForm = XForm(
+      tl: this[Point(x - 1, y - 1)] ?? '',
+      tr: this[Point(x + 1, y - 1)] ?? '',
+      bl: this[Point(x - 1, y + 1)] ?? '',
+      br: this[Point(x + 1, y + 1)] ?? '',
+      centerPoint: Point(x, y),
+    );
+    return xForm.isCorrect ? xForm : null;
   }
 }
 
