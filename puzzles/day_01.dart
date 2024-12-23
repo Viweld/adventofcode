@@ -23,7 +23,7 @@ final class HistorianHysteria implements DailyChallenge {
     List<int> secondList = [];
     for (final line in linesRaw) {
       final pairRaw = line.trim();
-      if (pairRaw.isEmpty) break;
+      if (pairRaw.isEmpty) continue;
       final pair = pairRaw.split('   ').map(int.parse);
       firstList.add(pair.first);
       secondList.add(pair.last);
